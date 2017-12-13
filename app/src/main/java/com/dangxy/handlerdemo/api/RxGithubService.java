@@ -1,5 +1,13 @@
 package com.dangxy.handlerdemo.api;
 
+import com.dangxy.handlerdemo.entity.RepoEntity;
+
+import java.util.List;
+
+import io.reactivex.Observable;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+
 /**
  * @author dangxueyi
  * @description
@@ -7,5 +15,11 @@ package com.dangxy.handlerdemo.api;
  */
 
 public interface RxGithubService {
-
+    /**
+     * RX获取仓库
+     * @param user
+     * @return
+     */
+    @GET("users/{user}/repos")
+    Observable<List<RepoEntity>> listRepos(@Path("user") String user);
 }

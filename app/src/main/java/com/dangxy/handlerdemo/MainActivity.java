@@ -10,14 +10,19 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.TextView;
 
 import com.dangxy.handlerdemo.api.GithubService;
 import com.dangxy.handlerdemo.api.RetrofitGithub;
+import com.dangxy.handlerdemo.api.RxGithubService;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.utils.MLog;
 
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.ResourceObserver;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -50,12 +55,14 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     });
+    private TextView textview;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        textview =(TextView)findViewById(R.id.tv_text_view);
         Message message = new Message();
         Bundle bundle = new Bundle();
         bundle.putString("hello", "word");
@@ -82,6 +89,30 @@ public class MainActivity extends AppCompatActivity {
                MLog.e("DANG",t.getMessage());
            }
        });
+
+        RxGithubService rxGithubService = new RetrofitGithub().newInstance(this).create(RxGithubService.class);
+
+        rxGithubService.listRepos("dangxy")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ResourceObserver<List<RepoEntity>>() {
+                    @Override
+                    public void onNext(List<RepoEntity> repoEntities) {
+
+                        textview.setText(repoEntities.get(0).getForks_url());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
 
     }
 
