@@ -22,4 +22,7 @@ public interface RxGithubService {
      */
     @GET("users/{user}/repos")
     Observable<List<RepoEntity>> listRepos(@Path("user") String user);
+
+    @GET("users/{user}/starred")
+    Observable<List<RepoEntity>> listStarredRepos(@Path("user") String user);
 }

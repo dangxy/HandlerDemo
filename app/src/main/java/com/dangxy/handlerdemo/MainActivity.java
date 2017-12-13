@@ -86,12 +86,17 @@ public class MainActivity extends AppCompatActivity {
         mContext= this;
         //retrofitGithub();
 
-        //rxRetrofitGithub();
+        rxRetrofitGithub();
 
       // retrofitGank();
 
         //rxRetrofitGank();
 
+        //rxGankRetrofit();
+
+    }
+
+    private void rxGankRetrofit() {
         RxGankService rxGankService = new RetrofitGank().newInstance(this).create(RxGankService.class);
 
         rxGankService.getWelfareListData("15","1")
@@ -113,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-
     }
 
     private void rxRetrofitGank() {
@@ -167,14 +171,17 @@ public class MainActivity extends AppCompatActivity {
     private void rxRetrofitGithub() {
         RxGithubService rxGithubService = new RetrofitGithub().newInstance(this).create(RxGithubService.class);
 
-        rxGithubService.listRepos("dangxy")
+        rxGithubService.listStarredRepos("dangxy")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new ResourceObserver<List<RepoEntity>>() {
                     @Override
                     public void onNext(List<RepoEntity> repoEntities) {
 
-                        textview.setText(repoEntities.get(0).getForks_url());
+                      for(RepoEntity repoEntity:repoEntities){
+                          MLog.e("dang",repoEntities.size()+"");
+                          MLog.e("dang",repoEntity.getDescription());
+                      }
                     }
 
                     @Override
