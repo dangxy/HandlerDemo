@@ -11,6 +11,17 @@ import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 
+import com.dangxy.handlerdemo.api.GithubService;
+import com.dangxy.handlerdemo.api.RetrofitGithub;
+import com.dangxy.handlerdemo.entity.RepoEntity;
+import com.dangxy.handlerdemo.utils.MLog;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * @author dangxy99
  * @description 描述
@@ -58,7 +69,19 @@ public class MainActivity extends AppCompatActivity {
         handler.sendMessageDelayed(message,3000);
         handler.sendMessageDelayed(message2,10000);
 
+       GithubService githubService =  new RetrofitGithub().newInstance(this).create(GithubService.class);
+       githubService.listRepos("dangxy").enqueue(new Callback<List<RepoEntity>>() {
+           @Override
+           public void onResponse(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
+               List<RepoEntity> repoEntityList = response.body();
+               MLog.d("DANG",repoEntityList.get(0).getFull_name());
+           }
 
+           @Override
+           public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
+               MLog.e("DANG",t.getMessage());
+           }
+       });
 
     }
 
@@ -89,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     /**
-     * 应用市场
+     * 跳转应用市场
      * @param context
      * @param packageName
      */
