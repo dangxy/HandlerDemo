@@ -10,11 +10,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.dangxy.handlerdemo.api.GankService;
 import com.dangxy.handlerdemo.api.GithubService;
+import com.dangxy.handlerdemo.api.RetrofitGank;
 import com.dangxy.handlerdemo.api.RetrofitGithub;
+import com.dangxy.handlerdemo.api.RxGankService;
 import com.dangxy.handlerdemo.api.RxGithubService;
+import com.dangxy.handlerdemo.entity.CommonEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.utils.MLog;
 
@@ -56,13 +62,15 @@ public class MainActivity extends AppCompatActivity {
         }
     });
     private TextView textview;
+    private ImageView imageView;
+    private Context mContext;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textview =(TextView)findViewById(R.id.tv_text_view);
+        imageView =(ImageView)findViewById(R.id.iv_image_view);
         Message message = new Message();
         Bundle bundle = new Bundle();
         bundle.putString("hello", "word");
@@ -75,21 +83,88 @@ public class MainActivity extends AppCompatActivity {
         message2.what=2;
         handler.sendMessageDelayed(message,3000);
         handler.sendMessageDelayed(message2,10000);
+        mContext= this;
+        //retrofitGithub();
 
-       GithubService githubService =  new RetrofitGithub().newInstance(this).create(GithubService.class);
-       githubService.listRepos("dangxy").enqueue(new Callback<List<RepoEntity>>() {
-           @Override
-           public void onResponse(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
-               List<RepoEntity> repoEntityList = response.body();
-               MLog.d("DANG",repoEntityList.get(0).getFull_name());
-           }
+        //rxRetrofitGithub();
 
-           @Override
-           public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
-               MLog.e("DANG",t.getMessage());
-           }
-       });
+      // retrofitGank();
 
+        //rxRetrofitGank();
+
+        RxGankService rxGankService = new RetrofitGank().newInstance(this).create(RxGankService.class);
+
+        rxGankService.getWelfareListData("15","1")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ResourceObserver<CommonEntity>() {
+                    @Override
+                    public void onNext(CommonEntity android) {
+                        Glide.with(mContext).load(android.getResults().get(2).getUrl()).into(imageView);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
+    }
+
+    private void rxRetrofitGank() {
+        RxGankService rxGankService = new RetrofitGank().newInstance(this).create(RxGankService.class);
+
+        rxGankService.getListData("15","1")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ResourceObserver<CommonEntity>() {
+                    @Override
+                    public void onNext(CommonEntity android) {
+                        textview.setText(android.getResults().get(2).getDesc());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    /**
+     * gank获取数据
+     */
+
+    private void retrofitGank() {
+        GankService gankService = new RetrofitGank().newInstance(this).create(GankService.class);
+        gankService.getListData("15","1").enqueue(new Callback<CommonEntity>() {
+            @Override
+            public void onResponse(Call<CommonEntity> call, Response<CommonEntity> response) {
+                CommonEntity android = response.body();
+                MLog.e("DANG",android.getResults().get(1).getDesc())
+                ;
+            }
+
+            @Override
+            public void onFailure(Call<CommonEntity> call, Throwable t) {
+
+            }
+        });
+    }
+
+    /**
+     * rx github获取数据
+     */
+    private void rxRetrofitGithub() {
         RxGithubService rxGithubService = new RetrofitGithub().newInstance(this).create(RxGithubService.class);
 
         rxGithubService.listRepos("dangxy")
@@ -112,8 +187,26 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+    }
 
+    /**
+     * github获取数据
+     */
 
+    private void retrofitGithub() {
+        GithubService githubService =  new RetrofitGithub().newInstance(this).create(GithubService.class);
+        githubService.listRepos("dangxy").enqueue(new Callback<List<RepoEntity>>() {
+            @Override
+            public void onResponse(Call<List<RepoEntity>> call, Response<List<RepoEntity>> response) {
+                List<RepoEntity> repoEntityList = response.body();
+                MLog.d("DANG",repoEntityList.get(0).getFull_name());
+            }
+
+            @Override
+            public void onFailure(Call<List<RepoEntity>> call, Throwable t) {
+                MLog.e("DANG",t.getMessage());
+            }
+        });
     }
 
     /**
