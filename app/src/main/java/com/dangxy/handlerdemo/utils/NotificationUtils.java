@@ -17,13 +17,20 @@ import java.lang.reflect.Method;
 public class NotificationUtils {
         private static final String CHECK_OP_NO_THROW = "checkOpNoThrow";
         private static final String OP_POST_NOTIFICATION = "OP_POST_NOTIFICATION";
+
+    /**
+     * 判断是否打开通知
+     * @param context
+     * @return
+     */
+
         public  static  boolean isNotificationEnabled(Context context) {
             AppOpsManager mAppOps = (AppOpsManager)
                     context.getSystemService(Context.APP_OPS_SERVICE);
             ApplicationInfo appInfo = context.getApplicationInfo();
             String pkg = context.getApplicationContext().getPackageName();
             int uid = appInfo.uid;
-            Class appOpsClass = null; /* Context.APP_OPS_MANAGER */
+            Class appOpsClass = null;
             try {
                 appOpsClass = Class.forName(AppOpsManager.class.getName());
                 Method checkOpNoThrowMethod = appOpsClass.getMethod(CHECK_OP_NO_THROW, Integer.TYPE, Integer.TYPE, String.class);

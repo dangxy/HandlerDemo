@@ -1,5 +1,6 @@
 package com.dangxy.handlerdemo;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,9 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-
-import com.dangxy.handlerdemo.utils.MLog;
-import com.dangxy.handlerdemo.utils.NotificationUtils;
 
 /**
  * @author dangxy99
@@ -60,7 +58,8 @@ public class MainActivity extends AppCompatActivity {
         handler.sendMessageDelayed(message,3000);
         handler.sendMessageDelayed(message2,10000);
 
-        MLog.d("DANG", NotificationUtils.isNotificationEnabled(this)+"");
+
+
     }
 
     /**
@@ -88,4 +87,19 @@ public class MainActivity extends AppCompatActivity {
             Intent mIntent=new Intent(Settings.ACTION_SETTINGS);
             startActivity(mIntent);
         }
+
+    /**
+     * 应用市场
+     * @param context
+     * @param packageName
+     */
+    public static void goToMarket(Context context, String packageName) {
+        Uri uri = Uri.parse("market://details?id=" + packageName);
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+        try {
+            context.startActivity(goToMarket);
+        } catch (ActivityNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }
