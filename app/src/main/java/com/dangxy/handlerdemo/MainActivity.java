@@ -16,11 +16,14 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.dangxy.handlerdemo.api.GankService;
 import com.dangxy.handlerdemo.api.GithubService;
+import com.dangxy.handlerdemo.api.ReadhubService;
 import com.dangxy.handlerdemo.api.RetrofitGank;
 import com.dangxy.handlerdemo.api.RetrofitGithub;
+import com.dangxy.handlerdemo.api.RetrofitReadhub;
 import com.dangxy.handlerdemo.api.RxGankService;
 import com.dangxy.handlerdemo.api.RxGithubService;
 import com.dangxy.handlerdemo.entity.CommonEntity;
+import com.dangxy.handlerdemo.entity.NewListEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.utils.MLog;
 
@@ -86,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         mContext= this;
         //retrofitGithub();
 
-        rxRetrofitGithub();
+        //rxRetrofitGithub();
 
       // retrofitGank();
 
@@ -94,7 +97,53 @@ public class MainActivity extends AppCompatActivity {
 
         //rxGankRetrofit();
 
+        final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
+
+        readhubService.listNews("",15).enqueue(new Callback<NewListEntity>() {
+            @Override
+            public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
+
+                NewListEntity newListEntity = response.body();
+
+            }
+
+            @Override
+            public void onFailure(Call<NewListEntity> call, Throwable t) {
+
+            }
+        });
+        readhubService.listTechNews("",15).enqueue(new Callback<NewListEntity>() {
+            @Override
+            public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
+
+                NewListEntity newListEntity = response.body();
+
+            }
+
+            @Override
+            public void onFailure(Call<NewListEntity> call, Throwable t) {
+
+            }
+        }); readhubService.listTopicNews("",15).enqueue(new Callback<NewListEntity>() {
+            @Override
+            public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
+
+                NewListEntity newListEntity = response.body();
+
+            }
+
+            @Override
+            public void onFailure(Call<NewListEntity> call, Throwable t) {
+
+            }
+        });
+
     }
+
+
+    /**
+     * rx GANK 获取数据
+     */
 
     private void rxGankRetrofit() {
         RxGankService rxGankService = new RetrofitGank().newInstance(this).create(RxGankService.class);
