@@ -1,11 +1,17 @@
 package com.dangxy.handlerdemo;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 
 import com.dangxy.handlerdemo.utils.MLog;
+import com.dangxy.handlerdemo.utils.NotificationUtils;
 
 /**
  * @author dangxy99
@@ -23,12 +29,10 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     bundle =  msg.getData();
                     value =  bundle.getString("hello");
-                    MLog.d("DANG",value);
                     break;
                 case 2:
                      bundle =  msg.getData();
                     value =  bundle.getString("hello");
-                    MLog.e("DANG",value);
                     break;
                 default:
                     break;
@@ -56,6 +60,32 @@ public class MainActivity extends AppCompatActivity {
         handler.sendMessageDelayed(message,3000);
         handler.sendMessageDelayed(message2,10000);
 
-
+        MLog.d("DANG", NotificationUtils.isNotificationEnabled(this)+"");
     }
+
+    /**
+     * app的设置
+     * @param context
+     */
+    private void goToSet(Context context){
+        Intent mIntent = new Intent();
+        mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= 9) {
+            mIntent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+            mIntent.setData(Uri.fromParts("package", context.getPackageName(), null));
+        } else if (Build.VERSION.SDK_INT <= 8) {
+            mIntent.setAction(Intent.ACTION_VIEW);
+            mIntent.setClassName("com.android.settings", "com.android.setting.InstalledAppDetails");
+            mIntent.putExtra("com.android.settings.ApplicationPkgName", context.getPackageName());
+        }
+        context.startActivity(mIntent);    }
+
+    /**
+     * 系统的设置
+     */
+
+    private void goToAppSetting(){
+            Intent mIntent=new Intent(Settings.ACTION_SETTINGS);
+            startActivity(mIntent);
+        }
 }
