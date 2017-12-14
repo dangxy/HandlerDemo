@@ -3,6 +3,7 @@ package com.dangxy.handlerdemo;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,6 +11,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,6 +29,7 @@ import com.dangxy.handlerdemo.entity.CommonEntity;
 import com.dangxy.handlerdemo.entity.NewListEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.utils.MLog;
+import com.dangxy.handlerdemo.utils.ViewUtils;
 
 import java.util.List;
 
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView textview;
     private ImageView imageView;
     private Context mContext;
+    private Button save;
 
 
     @Override
@@ -74,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imageView =(ImageView)findViewById(R.id.iv_image_view);
+        save =(Button)findViewById(R.id.save);
         Message message = new Message();
         Bundle bundle = new Bundle();
         bundle.putString("hello", "word");
@@ -95,10 +101,26 @@ public class MainActivity extends AppCompatActivity {
 
         //rxRetrofitGank();
 
-        //rxGankRetrofit();
+        rxGankRetrofit();
 
         final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
 
+        //getReadhubNewsList(readhubService);
+        //getReadhubTechList(readhubService);
+        //getReadhubTopisList(readhubService);
+        findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
+                ViewUtils.saveBitmap(mContext,bitmap);
+
+
+            }
+        });
+
+    }
+
+    private void getReadhubNewsList(ReadhubService readhubService) {
         readhubService.listNews("",15).enqueue(new Callback<NewListEntity>() {
             @Override
             public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
@@ -112,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void getReadhubTechList(ReadhubService readhubService) {
         readhubService.listTechNews("",15).enqueue(new Callback<NewListEntity>() {
             @Override
             public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
@@ -124,7 +149,11 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Call<NewListEntity> call, Throwable t) {
 
             }
-        }); readhubService.listTopicNews("",15).enqueue(new Callback<NewListEntity>() {
+        });
+    }
+
+    private void getReadhubTopisList(ReadhubService readhubService) {
+        readhubService.listTopicNews("",15).enqueue(new Callback<NewListEntity>() {
             @Override
             public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
 
@@ -137,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
 
@@ -154,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new ResourceObserver<CommonEntity>() {
                     @Override
                     public void onNext(CommonEntity android) {
-                        Glide.with(mContext).load(android.getResults().get(2).getUrl()).into(imageView);
+                        Glide.with(mContext).load(android.getResults().get(0).getUrl()).into(imageView);
                     }
 
                     @Override
