@@ -3,7 +3,6 @@ package com.dangxy.handlerdemo;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,7 +28,6 @@ import com.dangxy.handlerdemo.entity.CommonEntity;
 import com.dangxy.handlerdemo.entity.NewListEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.utils.MLog;
-import com.dangxy.handlerdemo.utils.ViewUtils;
 
 import java.util.List;
 
@@ -85,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         bundle.putString("hello", "word");
         message.setData(bundle);
         message.what=1;
-        Message message2 = new Message();
+        final Message message2 = new Message();
         Bundle bundle2 = new Bundle();
         bundle2.putString("hello", "dang");
         message2.setData(bundle2);
@@ -101,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
 
         //rxRetrofitGank();
 
-        rxGankRetrofit();
+        //rxGankRetrofit();
+        //goToAppSetting();
+        //goToSet(this);
 
         final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
 
@@ -111,9 +111,11 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
-                ViewUtils.saveBitmap(mContext,bitmap);
+               // Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
+               // ViewUtils.saveBitmap(mContext,bitmap);
 
+              Intent intent = new Intent(mContext,ReadhubActivity.class);
+              startActivity(intent);
 
             }
         });
