@@ -13,6 +13,8 @@ import com.dangxy.handlerdemo.api.ReadhubService;
 import com.dangxy.handlerdemo.api.RetrofitReadhub;
 import com.dangxy.handlerdemo.entity.Topic;
 import com.dangxy.handlerdemo.entity.TopicRsp;
+import com.dangxy.handlerdemo.utils.LoadMoreDelegate;
+import com.dangxy.handlerdemo.utils.MLog;
 import com.dangxy.handlerdemo.utils.SwipeRefreshDelegate;
 
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.OnSwipeRefreshListener {
+public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.OnSwipeRefreshListener, LoadMoreDelegate.LoadMoreSubject {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     @BindView(R.id.rv)
@@ -42,6 +44,7 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
     private View view;
     private String last;
     private List<Topic> list = new ArrayList<>();
+    private LoadMoreDelegate onLoadMoreDelegate;
 
 
     public ReadhubFragment() {
@@ -72,6 +75,7 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
         view = inflater.inflate(R.layout.fragment_readhub, container, false);
         unbinder = ButterKnife.bind(this, view);
         refreshDelegate = new SwipeRefreshDelegate(this);
+        onLoadMoreDelegate = new LoadMoreDelegate(this);
         loadingCount = new AtomicInteger(0);
         initData();
         return view;
@@ -83,12 +87,12 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         getData("");
-        rv.setOnScrollListener(new EndlessRecyclerOnScrollListener(linearLayoutManager) {
-            @Override
-            public void onLoadMore(int currentPage) {
-                getMoreData(last);
-            }
-        });
+//        rv.setOnScrollListener(new EndlessRecyclerOnScrollListener(linearLayoutManager) {
+//            @Override
+//            public void onLoadMore(int page) {
+//                getMoreData(last);
+//            }
+//        });
 
 
     }
@@ -105,6 +109,7 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
                 refreshDelegate.attach(view);
                 last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
                 readhubListAdapter = new ReadhubListAdapter(topicRsp.getData());
+                onLoadMoreDelegate.attach(rv);
                 rv.setAdapter(readhubListAdapter);
             }
 
@@ -127,12 +132,13 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
     }
 
     private void getMoreData(String lastCursors) {
+        notifyLoadingStarted();
         ReadhubService readhubService = new RetrofitReadhub().newInstance(HandlerDemoApplication.getContext()).create(ReadhubService.class);
 
         readhubService.listTopicNews(lastCursors, 15).enqueue(new Callback<TopicRsp>() {
             @Override
             public void onResponse(Call<TopicRsp> call, Response<TopicRsp> response) {
-
+                notifyLoadingFinished();
                 TopicRsp topicRsp = response.body();
                 last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
                 readhubListAdapter.addAll(topicRsp.getData());
@@ -148,4 +154,26 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
     }
 
 
+    @Override
+    public boolean isLoading() {
+        return loadingCount.get() > 0;
+    }
+
+    @Override
+    public void onLoadMore() {
+        MLog.e("DEBUG","MORE");
+        getMoreData(last);
+
+    }
+
+    public void notifyLoadingStarted() {
+        loadingCount.getAndIncrement();
+        MLog.e("DEBUG","start"+loadingCount.getAndIncrement());
+    }
+
+
+    public void notifyLoadingFinished() {
+        loadingCount.decrementAndGet();
+        MLog.e("DEBUG","end"+loadingCount.decrementAndGet());
+    }
 }
