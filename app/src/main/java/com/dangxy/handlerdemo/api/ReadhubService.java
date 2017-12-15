@@ -1,6 +1,7 @@
 package com.dangxy.handlerdemo.api;
 
 import com.dangxy.handlerdemo.entity.NewListEntity;
+import com.dangxy.handlerdemo.entity.TopicRsp;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -28,7 +29,7 @@ public interface ReadhubService {
      * @return
      */
     @GET("topic")
-    Call<NewListEntity> listTopicNews(@Query("lastCursor") String lastCursor, @Query("pageSize") int pageSize);
+    Call<TopicRsp> listTopicNews(@Query("lastCursor") String lastCursor, @Query("pageSize") int pageSize);
     /**
      * 获取开发者头条
      * @param lastCursor

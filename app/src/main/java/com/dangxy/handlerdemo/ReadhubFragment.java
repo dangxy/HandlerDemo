@@ -11,7 +11,13 @@ import android.view.ViewGroup;
 import com.dangxy.handlerdemo.adapter.ReadhubListAdapter;
 import com.dangxy.handlerdemo.api.ReadhubService;
 import com.dangxy.handlerdemo.api.RetrofitReadhub;
-import com.dangxy.handlerdemo.entity.NewListEntity;
+import com.dangxy.handlerdemo.entity.Topic;
+import com.dangxy.handlerdemo.entity.TopicRsp;
+import com.dangxy.handlerdemo.utils.SwipeRefreshDelegate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -20,7 +26,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ReadhubFragment extends Fragment {
+public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.OnSwipeRefreshListener {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     @BindView(R.id.rv)
@@ -30,6 +36,12 @@ public class ReadhubFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private ReadhubListAdapter readhubListAdapter;
+    private SwipeRefreshDelegate refreshDelegate;
+    private boolean isEnd;
+    private AtomicInteger loadingCount;
+    private View view;
+    private String last;
+    private List<Topic> list = new ArrayList<>();
 
 
     public ReadhubFragment() {
@@ -57,8 +69,10 @@ public class ReadhubFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_readhub, container, false);
+        view = inflater.inflate(R.layout.fragment_readhub, container, false);
         unbinder = ButterKnife.bind(this, view);
+        refreshDelegate = new SwipeRefreshDelegate(this);
+        loadingCount = new AtomicInteger(0);
         initData();
         return view;
     }
@@ -68,22 +82,34 @@ public class ReadhubFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(HandlerDemoApplication.getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
-
-        final ReadhubService readhubService = new RetrofitReadhub().newInstance(HandlerDemoApplication.getContext()).create(ReadhubService.class);
-
-        readhubService.listTopicNews("",15).enqueue(new Callback<NewListEntity>() {
+        getData("");
+        rv.setOnScrollListener(new EndlessRecyclerOnScrollListener(linearLayoutManager) {
             @Override
-            public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
+            public void onLoadMore(int currentPage) {
+                getMoreData(last);
+            }
+        });
 
-                NewListEntity newListEntity = response.body();
-                readhubListAdapter = new ReadhubListAdapter(newListEntity.getData());
+
+    }
+
+    private void getData(String lastCursors) {
+        ReadhubService readhubService = new RetrofitReadhub().newInstance(HandlerDemoApplication.getContext()).create(ReadhubService.class);
+
+        readhubService.listTopicNews(lastCursors, 15).enqueue(new Callback<TopicRsp>() {
+            @Override
+            public void onResponse(Call<TopicRsp> call, Response<TopicRsp> response) {
+
+                TopicRsp topicRsp = response.body();
+                refreshDelegate.setRefresh(false);
+                refreshDelegate.attach(view);
+                last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
+                readhubListAdapter = new ReadhubListAdapter(topicRsp.getData());
                 rv.setAdapter(readhubListAdapter);
-
-
             }
 
             @Override
-            public void onFailure(Call<NewListEntity> call, Throwable t) {
+            public void onFailure(Call<TopicRsp> call, Throwable t) {
 
             }
         });
@@ -94,4 +120,32 @@ public class ReadhubFragment extends Fragment {
         super.onDestroyView();
         unbinder.unbind();
     }
+
+    @Override
+    public void onSwipeRefresh() {
+        getData("");
+    }
+
+    private void getMoreData(String lastCursors) {
+        ReadhubService readhubService = new RetrofitReadhub().newInstance(HandlerDemoApplication.getContext()).create(ReadhubService.class);
+
+        readhubService.listTopicNews(lastCursors, 15).enqueue(new Callback<TopicRsp>() {
+            @Override
+            public void onResponse(Call<TopicRsp> call, Response<TopicRsp> response) {
+
+                TopicRsp topicRsp = response.body();
+                last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
+                readhubListAdapter.addAll(topicRsp.getData());
+
+
+            }
+
+            @Override
+            public void onFailure(Call<TopicRsp> call, Throwable t) {
+
+            }
+        });
+    }
+
+
 }

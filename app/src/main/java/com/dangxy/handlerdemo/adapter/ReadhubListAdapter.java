@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dangxy.handlerdemo.R;
-import com.dangxy.handlerdemo.entity.NewsEntity;
+import com.dangxy.handlerdemo.entity.Topic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +20,9 @@ import java.util.List;
 
 public class ReadhubListAdapter extends RecyclerView.Adapter<ReadhubListAdapter.ViewHolder> {
 
-    private List<NewsEntity>listEntities = new ArrayList<>();
+    private List<Topic>listEntities = new ArrayList<>();
 
-    public ReadhubListAdapter(List<NewsEntity> listEntities) {
+    public ReadhubListAdapter(List<Topic> listEntities) {
         this.listEntities = listEntities;
     }
 
@@ -37,9 +37,9 @@ public class ReadhubListAdapter extends RecyclerView.Adapter<ReadhubListAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.more.setText(listEntities.get(position).getTitle());
+        holder.title.setText(listEntities.get(position).getTitle());
         holder.summary.setText(listEntities.get(position).getSummary());
-        holder.more.setText(listEntities.get(position).getSiteName());
+        holder.more.setText(listEntities.get(position).getId());
     }
 
 
@@ -58,5 +58,9 @@ public class ReadhubListAdapter extends RecyclerView.Adapter<ReadhubListAdapter.
             summary = (TextView) convertView.findViewById(R.id.summary);
             more = (TextView) convertView.findViewById(R.id.more);
         }
+    }
+    public void addAll(List<Topic> topicList) {
+        listEntities.addAll(topicList);
+        notifyDataSetChanged();
     }
 }

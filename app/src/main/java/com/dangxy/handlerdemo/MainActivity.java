@@ -19,14 +19,18 @@ import com.bumptech.glide.Glide;
 import com.dangxy.handlerdemo.api.GankService;
 import com.dangxy.handlerdemo.api.GithubService;
 import com.dangxy.handlerdemo.api.ReadhubService;
+import com.dangxy.handlerdemo.api.RebaseService;
 import com.dangxy.handlerdemo.api.RetrofitGank;
 import com.dangxy.handlerdemo.api.RetrofitGithub;
 import com.dangxy.handlerdemo.api.RetrofitReadhub;
+import com.dangxy.handlerdemo.api.RetrofitRebase;
 import com.dangxy.handlerdemo.api.RxGankService;
 import com.dangxy.handlerdemo.api.RxGithubService;
 import com.dangxy.handlerdemo.entity.CommonEntity;
 import com.dangxy.handlerdemo.entity.NewListEntity;
+import com.dangxy.handlerdemo.entity.RebaseUserEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
+import com.dangxy.handlerdemo.entity.TopicRsp;
 import com.dangxy.handlerdemo.utils.MLog;
 
 import java.util.List;
@@ -102,9 +106,9 @@ public class MainActivity extends AppCompatActivity {
         //rxGankRetrofit();
         //goToAppSetting();
         //goToSet(this);
-
         final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
 
+        //retrofitRebas();
         //getReadhubNewsList(readhubService);
         //getReadhubTechList(readhubService);
         //getReadhubTopisList(readhubService);
@@ -120,6 +124,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void retrofitRebas() {
+        RebaseService rebaseService =  new RetrofitRebase().newInstance(this).create(RebaseService.class);
+        rebaseService.register("dangxy99","111111","dangxy99","dangxy99@163.com","android developer").enqueue(new Callback<RebaseUserEntity>() {
+            @Override
+            public void onResponse(Call<RebaseUserEntity> call, Response<RebaseUserEntity> response) {
+
+               RebaseUserEntity rebaseUserEntity =  response.body();
+               MLog.e("DANG",response.body().toString());
+            }
+
+            @Override
+            public void onFailure(Call<RebaseUserEntity> call, Throwable t) {
+
+            }
+        });
     }
 
     private void getReadhubNewsList(ReadhubService readhubService) {
@@ -155,16 +176,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getReadhubTopisList(ReadhubService readhubService) {
-        readhubService.listTopicNews("",15).enqueue(new Callback<NewListEntity>() {
+        readhubService.listTopicNews("",15).enqueue(new Callback<TopicRsp>() {
             @Override
-            public void onResponse(Call<NewListEntity> call, Response<NewListEntity> response) {
+            public void onResponse(Call<TopicRsp> call, Response<TopicRsp> response) {
 
-                NewListEntity newListEntity = response.body();
+                TopicRsp topicRsp = response.body();
 
             }
 
             @Override
-            public void onFailure(Call<NewListEntity> call, Throwable t) {
+            public void onFailure(Call<TopicRsp> call, Throwable t) {
 
             }
         });
