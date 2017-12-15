@@ -3,6 +3,8 @@ package com.dangxy.handlerdemo;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ import com.dangxy.handlerdemo.entity.NewListEntity;
 import com.dangxy.handlerdemo.entity.RebaseUserEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.entity.TopicRsp;
+import com.dangxy.handlerdemo.receiver.PhoneStatusReceiver;
 import com.dangxy.handlerdemo.utils.MLog;
 import com.dangxy.handlerdemo.utils.ShakeUtils;
 
@@ -115,6 +118,12 @@ public class MainActivity extends AppCompatActivity {
                 MLog.e("DANG","振动");
             }
         });
+        PhoneStatusReceiver receiver = new PhoneStatusReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
+        registerReceiver(receiver, filter);
+
+        registerReceiver(new PhoneStatusReceiver(),new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
 
         //retrofitRebas();
@@ -127,8 +136,11 @@ public class MainActivity extends AppCompatActivity {
                // Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
                // ViewUtils.saveBitmap(mContext,bitmap);
 
-              Intent intent = new Intent(mContext,ReadhubActivity.class);
-              startActivity(intent);
+//              Intent intent = new Intent(mContext,ReadhubActivity.class);
+//              startActivity(intent);
+                Intent intent = new Intent("android.intent.action.MY_BROADCAST");
+                intent.putExtra("msg", "这是一条测试广播");
+                sendBroadcast(intent);
 
             }
         });

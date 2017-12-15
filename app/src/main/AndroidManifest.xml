@@ -22,7 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ReadhubActivity"></activity>
+        <activity android:name=".ReadhubActivity" />
+
+        <receiver
+            android:name=".receiver.PhoneStatusReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_BROADCAST">
+
+                </action>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
