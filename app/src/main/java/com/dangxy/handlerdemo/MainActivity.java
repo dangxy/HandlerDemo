@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import com.dangxy.handlerdemo.entity.NewListEntity;
 import com.dangxy.handlerdemo.entity.RebaseUserEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.entity.TopicRsp;
+import com.dangxy.handlerdemo.receiver.NetworkBroadcastReceiver;
 import com.dangxy.handlerdemo.receiver.PhoneStatusReceiver;
 import com.dangxy.handlerdemo.utils.MLog;
 import com.dangxy.handlerdemo.utils.ShakeUtils;
@@ -118,12 +120,11 @@ public class MainActivity extends AppCompatActivity {
                 MLog.e("DANG","振动");
             }
         });
-        PhoneStatusReceiver receiver = new PhoneStatusReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
-        registerReceiver(receiver, filter);
+        //phoneState();
 
-        registerReceiver(new PhoneStatusReceiver(),new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        //netWorkState();
+
+        //registerReceiver(new PhoneStatusReceiver(),new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
 
         //retrofitRebas();
@@ -145,6 +146,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void phoneState() {
+        PhoneStatusReceiver receiver = new PhoneStatusReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
+        registerReceiver(receiver, filter);
+    }
+
+    private void netWorkState() {
+        NetworkBroadcastReceiver networkBroadcastReceiver = new NetworkBroadcastReceiver();
+        IntentFilter filter1 = new IntentFilter();
+        filter1.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkBroadcastReceiver, filter1);
     }
 
     private void retrofitRebas() {
