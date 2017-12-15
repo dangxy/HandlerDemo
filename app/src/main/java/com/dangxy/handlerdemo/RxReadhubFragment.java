@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import com.dangxy.handlerdemo.adapter.ReadhubListAdapter;
 import com.dangxy.handlerdemo.api.ReadhubService;
 import com.dangxy.handlerdemo.api.RetrofitReadhub;
+import com.dangxy.handlerdemo.api.RxReadhubService;
 import com.dangxy.handlerdemo.entity.TopicRsp;
 import com.dangxy.handlerdemo.utils.LoadMoreDelegate;
 import com.dangxy.handlerdemo.utils.MLog;
@@ -21,11 +22,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.observers.ResourceObserver;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+/**
+ * @description  描述
+ * @author  dangxy99
+ * @date   2017/12/15
+ */
 
-public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.OnSwipeRefreshListener, LoadMoreDelegate.LoadMoreSubject {
+public class RxReadhubFragment extends Fragment implements SwipeRefreshDelegate.OnSwipeRefreshListener, LoadMoreDelegate.LoadMoreSubject {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     @BindView(R.id.rv)
@@ -42,12 +53,12 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
     private LoadMoreDelegate onLoadMoreDelegate;
 
 
-    public ReadhubFragment() {
+    public RxReadhubFragment() {
         // Required empty public constructor
     }
 
-    public static ReadhubFragment newInstance(String param1, String param2) {
-        ReadhubFragment fragment = new ReadhubFragment();
+    public static RxReadhubFragment newInstance(String param1, String param2) {
+        RxReadhubFragment fragment = new RxReadhubFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -81,7 +92,8 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(HandlerDemoApplication.getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
-        getData("");
+        //getData("");
+        getRxData("");
 //        rv.setOnScrollListener(new EndlessRecyclerOnScrollListener(linearLayoutManager) {
 //            @Override
 //            public void onLoadMore(int page) {
@@ -99,13 +111,7 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
             @Override
             public void onResponse(Call<TopicRsp> call, Response<TopicRsp> response) {
 
-                TopicRsp topicRsp = response.body();
-                refreshDelegate.setRefresh(false);
-                refreshDelegate.attach(view);
-                last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
-                readhubListAdapter = new ReadhubListAdapter(topicRsp.getData());
-                onLoadMoreDelegate.attach(rv);
-                rv.setAdapter(readhubListAdapter);
+
             }
 
             @Override
@@ -113,6 +119,50 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
 
             }
         });
+
+
+        getRxData(lastCursors);
+    }
+
+    private void getRxData(String lastCursors) {
+        RxReadhubService rxReadhubService = new RetrofitReadhub().newInstance(HandlerDemoApplication.getContext()).create(RxReadhubService.class);
+
+        rxReadhubService.listTopicNews(lastCursors, 15)
+                .doOnNext(new Consumer<TopicRsp>() {
+                    @Override
+                    public void accept(TopicRsp topicRsp) throws Exception {
+                    MLog.e("DANG","doOnNext");
+                    }
+                })
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        refreshDelegate.setRefresh(false);
+                        MLog.e("DANG","doFinally");
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ResourceObserver<TopicRsp>() {
+                    @Override
+                    public void onNext(TopicRsp topicRsp) {
+                        refreshDelegate.attach(view);
+                        last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
+                        readhubListAdapter = new ReadhubListAdapter(topicRsp.getData());
+                        onLoadMoreDelegate.attach(rv);
+                        rv.setAdapter(readhubListAdapter);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
     @Override
@@ -148,6 +198,45 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
         });
     }
 
+    private void getRxMoreData(String lastCursors) {
+
+        RxReadhubService rxReadhubService = new RetrofitReadhub().newInstance(HandlerDemoApplication.getContext()).create(RxReadhubService.class);
+
+        rxReadhubService.listTopicNews(lastCursors, 15)
+                .doOnNext(new Consumer<TopicRsp>() {
+                    @Override
+                    public void accept(TopicRsp topicRsp) throws Exception {
+                        notifyLoadingStarted();
+                    }
+                })
+                .doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        notifyLoadingFinished();
+
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new ResourceObserver<TopicRsp>() {
+                    @Override
+                    public void onNext(TopicRsp topicRsp) {
+                        last = topicRsp.getData().get(topicRsp.getData().size() - 1).getOrder();
+                        readhubListAdapter.addAll(topicRsp.getData());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
 
     @Override
     public boolean isLoading() {
@@ -156,19 +245,16 @@ public class ReadhubFragment extends Fragment implements SwipeRefreshDelegate.On
 
     @Override
     public void onLoadMore() {
-        MLog.e("DEBUG","MORE");
-        getMoreData(last);
+        getRxMoreData(last);
 
     }
 
     public void notifyLoadingStarted() {
         loadingCount.getAndIncrement();
-        MLog.e("DEBUG","start"+loadingCount.getAndIncrement());
     }
 
 
     public void notifyLoadingFinished() {
         loadingCount.decrementAndGet();
-        MLog.e("DEBUG","end"+loadingCount.decrementAndGet());
     }
 }

@@ -32,6 +32,7 @@ import com.dangxy.handlerdemo.entity.RebaseUserEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.entity.TopicRsp;
 import com.dangxy.handlerdemo.utils.MLog;
+import com.dangxy.handlerdemo.utils.ShakeUtils;
 
 import java.util.List;
 
@@ -106,6 +107,14 @@ public class MainActivity extends AppCompatActivity {
         //rxGankRetrofit();
         //goToAppSetting();
         //goToSet(this);
+
+        ShakeUtils shakeUtils = new ShakeUtils(mContext);
+        shakeUtils.setOnShakeListener(new ShakeUtils.OnShakeListener() {
+            @Override
+            public void onShake() {
+                MLog.e("DANG","振动");
+            }
+        });
         final ReadhubService readhubService = new RetrofitReadhub().newInstance(this).create(ReadhubService.class);
 
         //retrofitRebas();

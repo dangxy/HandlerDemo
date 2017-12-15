@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.dangxy.handlerdemo.ReadhubFragment;
+import com.dangxy.handlerdemo.RxReadhubFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,8 @@ public class ReadhubAdapter extends FragmentPagerAdapter {
     private void  initData(){
         for (String s : titleList) {
             fragmentTitles.add(s);
-            ReadhubFragment readhubFragment = new ReadhubFragment();
-            fragments.add(readhubFragment);
+            RxReadhubFragment rxReadhubFragment = new RxReadhubFragment();
+            fragments.add(rxReadhubFragment);
         }
     }
 
