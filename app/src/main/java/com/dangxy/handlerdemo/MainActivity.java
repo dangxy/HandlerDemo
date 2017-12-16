@@ -1,10 +1,13 @@
 package com.dangxy.handlerdemo;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
@@ -15,6 +18,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
@@ -44,6 +51,7 @@ import com.dangxy.handlerdemo.utils.ShakeUtils;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.jakewharton.rxbinding2.widget.TextViewAfterTextChangeEvent;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +71,8 @@ import retrofit2.Response;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private static final int ACCESS_COARSE_LOCATION =2 ;
+    private static final int ACCESS_FINE_LOCATION = 3;
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -89,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
     private Context mContext;
     private Button save;
     private EditText et;
+    private RxPermissions rxPermissions;
+    public  static  final int MY_PERMISSIONS_CAMERA = 1;
 
 
     @Override
@@ -122,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
         //rxGankRetrofit();
         //goToAppSetting();
         //goToSet(this);
+        rxPermissions = new RxPermissions(this);
+
 
         ShakeUtils shakeUtils = new ShakeUtils(mContext);
         shakeUtils.setOnShakeListener(new ShakeUtils.OnShakeListener() {
@@ -161,15 +175,16 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                });
 
-
+        requestPermissions();
         RxView.clicks(save)
                 .throttleFirst(2, TimeUnit.SECONDS)
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
 
-                        MLog.e("DANG", "点击事件");
                     }
+
+
                 }, new Consumer<Throwable>() {
 
                     @Override
@@ -182,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
-                        MLog.e("DANG","长点击事件");
+                        MLog.e("DANG", "长点击事件");
                     }
                 });
 
@@ -190,20 +205,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void accept(CharSequence charSequence) throws Exception {
 
-                MLog.e("DANG",charSequence+"");
+                MLog.e("DANG", charSequence + "");
             }
         });
         RxTextView.afterTextChangeEvents(et).subscribe(new Consumer<TextViewAfterTextChangeEvent>() {
             @Override
             public void accept(TextViewAfterTextChangeEvent textViewAfterTextChangeEvent) throws Exception {
 
-                MLog.e("DANG","输入完毕");
+                MLog.e("DANG", "输入完毕");
 
             }
         });
-
-
-
 
 
         //phoneState();
@@ -233,6 +245,94 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
 
+    }
+
+    private void requestPermissions(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {// 没有权限。
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                  MLog.e("DANG","qqqqqq");
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_COARSE_LOCATION);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION);
+                MLog.e("DANG","wwwww");
+            }
+        } else {
+
+            MLog.e("DANG","eeeeeee");
+        }
+    }
+
+    private void requestCamera() {
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+              MLog.e("DANG","1111");
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage("app需要开启权限才能使用此功能")
+                        .setPositiveButton("设置", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .create()
+                        .show();
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                MLog.e("DANG","222222");
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_CAMERA);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+                MLog.e("DANG","3333333");
+            }
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_CAMERA:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                      MLog.e("DANG","同意");
+                }else {
+                      MLog.e("DANG","拒绝");
+                }
+                break;
+                default:
+                    break;
+        }
+    }
+
+    private void requestRxCamera() {
+        rxPermissions.request(Manifest.permission.CAMERA)
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        if (aBoolean) {
+                            MLog.e("DANG", "同意");
+                        } else {
+                            MLog.e("DANG", "拒绝");
+                        }
+                    }
+                });
     }
 
     private void phoneState() {
