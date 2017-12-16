@@ -56,7 +56,7 @@ public class RetrofitGank {
                 .addInterceptor(new LoggingInterceptor())
                 .addNetworkInterceptor(mCacheControlInterceptor).build();
         try {
-            MLog.e("DANG", cache.size() + "-99999");
+            cache.size();
         } catch (IOException e) {
         }
         return okHttpClient;
