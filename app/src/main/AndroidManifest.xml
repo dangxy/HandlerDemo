@@ -45,6 +45,8 @@
 
     <!-- 访问Push APK provider需要的权限，SDK富媒体需要,无富媒体功能则不需要 -->
     <uses-permission android:name="com.huawei.pushagent.permission.RICHMEDIA_PROVIDER" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
         android:name=".HandlerDemoApplication"

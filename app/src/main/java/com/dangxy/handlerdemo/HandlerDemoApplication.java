@@ -22,5 +22,8 @@ public class HandlerDemoApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mContext=getApplicationContext();
+//        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+//        StrictMode.setVmPolicy(builder.build());
+//        builder.detectFileUriExposure();
     }
 }

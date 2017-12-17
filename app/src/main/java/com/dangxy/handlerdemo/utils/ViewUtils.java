@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -19,6 +20,8 @@ import android.widget.ImageView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -267,6 +270,33 @@ public class ViewUtils {
             return null;
         }
     }
+    /**
+     * 创建图片File对象
+     *
+     * @return
+     */
+    public static File createImageFile() {
+        File imageFile = null;
+        String storagePath;
+        File storageDir;
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        try {
+            storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + File.separator + "camerademo";
+            //storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath() + File.separator + "camerademo";
+            //storagePath = App.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+            //storagePath = App.getInstance().getExternalCacheDir().getAbsolutePath() + File.separator + "camerademo";
+            //storagePath = App.getInstance().getFilesDir().getAbsolutePath() + File.separator + "images";
+            storageDir = new File(storagePath);
+            storageDir.mkdirs();
+            imageFile = File.createTempFile(timeStamp, ".jpg", storageDir);
+            Log.e(TAG, imageFile.getAbsolutePath());
+        } catch (IOException e) {
+            Log.e(TAG,"error"+e.getMessage());
+            e.printStackTrace();
+        }
+        return imageFile;
+    }
+
 
 
 }

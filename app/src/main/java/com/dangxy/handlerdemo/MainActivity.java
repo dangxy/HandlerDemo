@@ -14,6 +14,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -53,10 +54,15 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.jakewharton.rxbinding2.widget.TextViewAfterTextChangeEvent;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.observers.ResourceObserver;
 import io.reactivex.schedulers.Schedulers;
@@ -73,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int ACCESS_COARSE_LOCATION =2 ;
     private static final int ACCESS_FINE_LOCATION = 3;
+    private static final int TAKE_PHOTO = 4;
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -101,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText et;
     private RxPermissions rxPermissions;
     public  static  final int MY_PERMISSIONS_CAMERA = 1;
+    private String mMobile;
+    private Uri photoURI;
 
 
     @Override
@@ -175,13 +184,17 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                });
 
-        requestPermissions();
+        //requestPermissions();
+        //requestCallPermissions();
         RxView.clicks(save)
                 .throttleFirst(2, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
-
+                        if (Build.VERSION.SDK_INT >= 23) {
+                            requestRxCamera();
+                        }
                     }
 
 
@@ -245,6 +258,34 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
 
+    }
+
+    private void requestCallPermissions() {
+        onCall("18236889159");
+    }
+    private void callDirectly(String mobile){
+        Intent intent = new Intent();
+        intent.setAction("android.intent.action.CALL");
+        intent.setData(Uri.parse("tel:" + mobile));
+        mContext.startActivity(intent);
+    }
+    final public static int REQUEST_CODE_ASK_CALL_PHONE = 123;
+
+    public void onCall(String mobile){
+        this.mMobile = mobile;
+        if (Build.VERSION.SDK_INT >= 23) {
+            int checkCallPhonePermission = ContextCompat.checkSelfPermission(mContext,Manifest.permission.CALL_PHONE);
+            if(checkCallPhonePermission != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CALL_PHONE},REQUEST_CODE_ASK_CALL_PHONE);
+                return;
+            }else{
+                //上面已经写好的拨号方法
+                callDirectly("18236889159");
+            }
+        } else {
+            //上面已经写好的拨号方法
+            callDirectly("18236889159");
+        }
     }
 
     private void requestPermissions(){
@@ -316,23 +357,78 @@ public class MainActivity extends AppCompatActivity {
                       MLog.e("DANG","拒绝");
                 }
                 break;
+
+            case REQUEST_CODE_ASK_CALL_PHONE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    MLog.e("DANG","同意");
+                    callDirectly("18236889159");
+                }else {
+                    MLog.e("DANG","拒绝");
+                }
+                break;
                 default:
                     break;
         }
     }
 
     private void requestRxCamera() {
+
         rxPermissions.request(Manifest.permission.CAMERA)
-                .subscribe(new Consumer<Boolean>() {
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Boolean>() {
                     @Override
-                    public void accept(Boolean aBoolean) throws Exception {
-                        if (aBoolean) {
-                            MLog.e("DANG", "同意");
-                        } else {
-                            MLog.e("DANG", "拒绝");
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Boolean aBoolean) {
+
+                        if(aBoolean){
+                            MLog.e("DANG","同意");
+                        }else {
+                            MLog.e("DANG","拒绝");
                         }
                     }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
                 });
+    }
+    private void takePhoto() {
+        Intent intent = new Intent();
+        intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, getUri());
+        startActivityForResult(intent, TAKE_PHOTO);
+    }
+    private Uri getUri() {
+
+        return Uri.fromFile(getFile());
+    }
+
+    /**
+     * 该方法用于获取指定路径 和 名字 的file
+     * @return
+     */
+    private File getFile() {
+        File filePath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "CameraDemo");
+        if (!filePath.exists()) {
+            filePath.mkdirs();
+        }
+        //将图片保存的名字设置为当前拍照的时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        String name = format.format(new Date());
+        File file = new File(filePath.getPath() + File.separator + name + ".jpg");
+        return file;
+
     }
 
     private void phoneState() {
