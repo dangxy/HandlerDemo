@@ -1,6 +1,7 @@
 package com.dangxy.handlerdemo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -77,7 +78,7 @@ import retrofit2.Response;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final int ACCESS_COARSE_LOCATION =2 ;
+    private static final int ACCESS_COARSE_LOCATION = 2;
     private static final int ACCESS_FINE_LOCATION = 3;
     private static final int TAKE_PHOTO = 4;
     private Handler handler = new Handler(new Handler.Callback() {
@@ -107,10 +108,12 @@ public class MainActivity extends AppCompatActivity {
     private Button save;
     private EditText et;
     private RxPermissions rxPermissions;
-    public  static  final int MY_PERMISSIONS_CAMERA = 1;
+    public static final int MY_PERMISSIONS_CAMERA = 1;
     private String mMobile;
     private Uri photoURI;
 
+    public static String[] thumbColumns = {MediaStore.Video.Thumbnails.DATA};
+    public static String[] mediaColumns = {MediaStore.Video.Media._ID};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,27 +157,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        ContentResolver mContentResolver = MainActivity.this.getContentResolver();
-        String largeFileSort = MediaStore.Images.ImageColumns._ID + " DESC";
-        //只查询jpeg和png的图片
-        Cursor mCursor = mContentResolver.query(mImageUri, null,
-                MediaStore.Images.Media.MIME_TYPE + "=? or "
-                        + MediaStore.Images.Media.MIME_TYPE + "=?",
-                new String[]{"image/jpeg", "image/png"}, largeFileSort);
-        int a = 1;
-        while (mCursor.moveToNext()) {
-            //获取图片的路径
-            if (mCursor.isFirst()) {
-                String path = mCursor.getString(mCursor
-                        .getColumnIndex(MediaStore.Images.Media.DATA));
 
-                MLog.e("DANG", path);
-                imageView.setImageURI(Uri.parse(path));
-                break;
-            }
+        Uri videoUrl = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
-        }
+        String path = getThumbnailPathForLocalFile(this, videoUrl);
+
+        MLog.e("DANG", path);
+        imageView.setImageURI(Uri.parse(path));
+
+
+        //getImagesFromLocal();
 
 
 //        RxView.clicks(imageView)
@@ -260,25 +252,96 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    public static String getThumbnailPathForLocalFile(Activity context,
+                                                      Uri fileUri) {
+        long fileId = getFileId(context, fileUri);
+        String largeFileSort = MediaStore.Images.ImageColumns._ID + " DESC";
+        MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(),
+                fileId, MediaStore.Video.Thumbnails.MICRO_KIND, null);
+
+        Cursor thumbCursor = null;
+        try {
+
+            thumbCursor = context.managedQuery(
+                    MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
+                    thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID + " = "
+                            + fileId, null, null);
+
+            if (thumbCursor.moveToFirst()) {
+                String thumbPath = thumbCursor.getString(thumbCursor
+                        .getColumnIndex(MediaStore.Video.Thumbnails.DATA));
+
+                return thumbPath;
+            }
+
+        } finally {
+        }
+
+        return null;
+    }
+
+    public static long getFileId(Activity context, Uri fileUri) {
+
+        Cursor cursor = context.managedQuery(fileUri, mediaColumns, null, null,
+                null);
+
+        if (cursor.moveToFirst()) {
+            int columnIndex = cursor
+                    .getColumnIndexOrThrow(MediaStore.Video.Media._ID);
+            int id = cursor.getInt(columnIndex);
+
+            return id;
+        }
+
+        return 0;
+    }
+
+    private void getImagesFromLocal() {
+        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        ContentResolver mContentResolver = MainActivity.this.getContentResolver();
+        String largeFileSort = MediaStore.Images.ImageColumns._ID + " DESC";
+        //只查询jpeg和png的图片
+        Cursor mCursor = mContentResolver.query(mImageUri, null,
+                MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=?",
+                new String[]{"image/jpeg", "image/png"}, largeFileSort);
+        int a = 1;
+        while (mCursor.moveToNext()) {
+            //获取图片的路径
+            if (mCursor.isFirst()) {
+                String path = mCursor.getString(mCursor
+                        .getColumnIndex(MediaStore.Images.Media.DATA));
+
+                MLog.e("DANG", path);
+                imageView.setImageURI(Uri.parse(path));
+                break;
+            }
+
+        }
+    }
+
     private void requestCallPermissions() {
         onCall("18236889159");
     }
-    private void callDirectly(String mobile){
+
+    private void callDirectly(String mobile) {
         Intent intent = new Intent();
         intent.setAction("android.intent.action.CALL");
         intent.setData(Uri.parse("tel:" + mobile));
         mContext.startActivity(intent);
     }
+
     final public static int REQUEST_CODE_ASK_CALL_PHONE = 123;
 
-    public void onCall(String mobile){
+    public void onCall(String mobile) {
         this.mMobile = mobile;
         if (Build.VERSION.SDK_INT >= 23) {
-            int checkCallPhonePermission = ContextCompat.checkSelfPermission(mContext,Manifest.permission.CALL_PHONE);
-            if(checkCallPhonePermission != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CALL_PHONE},REQUEST_CODE_ASK_CALL_PHONE);
+            int checkCallPhonePermission = ContextCompat.checkSelfPermission(mContext, Manifest.permission.CALL_PHONE);
+            if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE_ASK_CALL_PHONE);
                 return;
-            }else{
+            } else {
                 //上面已经写好的拨号方法
                 callDirectly("18236889159");
             }
@@ -288,18 +351,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void requestPermissions(){
+    private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {// 没有权限。
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                  MLog.e("DANG","qqqqqq");
+                MLog.e("DANG", "qqqqqq");
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_COARSE_LOCATION);
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION);
-                MLog.e("DANG","wwwww");
+                MLog.e("DANG", "wwwww");
             }
         } else {
 
-            MLog.e("DANG","eeeeeee");
+            MLog.e("DANG", "eeeeeee");
         }
     }
 
@@ -308,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-              MLog.e("DANG","1111");
+            MLog.e("DANG", "1111");
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
@@ -328,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                 // Show an expanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
-                MLog.e("DANG","222222");
+                MLog.e("DANG", "222222");
             } else {
 
                 // No explanation needed, we can request the permission.
@@ -340,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
-                MLog.e("DANG","3333333");
+                MLog.e("DANG", "3333333");
             }
         }
 
@@ -352,23 +415,23 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_CAMERA:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                      MLog.e("DANG","同意");
-                }else {
-                      MLog.e("DANG","拒绝");
+                    MLog.e("DANG", "同意");
+                } else {
+                    MLog.e("DANG", "拒绝");
                 }
                 break;
 
             case REQUEST_CODE_ASK_CALL_PHONE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    MLog.e("DANG","同意");
+                    MLog.e("DANG", "同意");
                     callDirectly("18236889159");
-                }else {
-                    MLog.e("DANG","拒绝");
+                } else {
+                    MLog.e("DANG", "拒绝");
                 }
                 break;
-                default:
-                    break;
+            default:
+                break;
         }
     }
 
@@ -385,10 +448,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(Boolean aBoolean) {
 
-                        if(aBoolean){
-                            MLog.e("DANG","同意");
-                        }else {
-                            MLog.e("DANG","拒绝");
+                        if (aBoolean) {
+                            MLog.e("DANG", "同意");
+                        } else {
+                            MLog.e("DANG", "拒绝");
                         }
                     }
 
@@ -403,12 +466,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
     private void takePhoto() {
         Intent intent = new Intent();
         intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, getUri());
         startActivityForResult(intent, TAKE_PHOTO);
     }
+
     private Uri getUri() {
 
         return Uri.fromFile(getFile());
@@ -416,6 +481,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 该方法用于获取指定路径 和 名字 的file
+     *
      * @return
      */
     private File getFile() {
