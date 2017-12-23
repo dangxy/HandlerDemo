@@ -79,7 +79,8 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".room.RoomActivity"></activity>
+        <activity android:name=".room.RoomActivity" />
+        <activity android:name=".realm.RealmActivity"></activity>
     </application>
 
 </manifest>

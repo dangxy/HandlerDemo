@@ -47,9 +47,9 @@ import com.dangxy.handlerdemo.entity.NewListEntity;
 import com.dangxy.handlerdemo.entity.RebaseUserEntity;
 import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.entity.TopicRsp;
+import com.dangxy.handlerdemo.realm.RealmActivity;
 import com.dangxy.handlerdemo.receiver.NetworkBroadcastReceiver;
 import com.dangxy.handlerdemo.receiver.PhoneStatusReceiver;
-import com.dangxy.handlerdemo.room.RoomActivity;
 import com.dangxy.handlerdemo.utils.MLog;
 import com.dangxy.handlerdemo.utils.ShakeUtils;
 import com.jakewharton.rxbinding2.view.RxView;
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
                 // Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
                 // ViewUtils.saveBitmap(mContext,bitmap);
 
-              Intent intent = new Intent(mContext,RoomActivity.class);
+              Intent intent = new Intent(mContext,RealmActivity.class);
               startActivity(intent);
 //                Intent intent = new Intent("android.intent.action.MY_BROADCAST");
 //                intent.putExtra("msg", "这是一条测试广播");

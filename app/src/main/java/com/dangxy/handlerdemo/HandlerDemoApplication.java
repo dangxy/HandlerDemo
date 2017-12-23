@@ -3,6 +3,9 @@ package com.dangxy.handlerdemo;
 import android.app.Application;
 import android.content.Context;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+
 /**
  * @author dangxueyi
  * @description
@@ -13,7 +16,7 @@ public class HandlerDemoApplication extends Application {
 
     private static Context mContext;
 
-    public static Context getContext(){
+    public static Context getContext() {
 
         return mContext;
     }
@@ -21,10 +24,15 @@ public class HandlerDemoApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        mContext=getApplicationContext();
+        mContext = getApplicationContext();
 //        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
 //        StrictMode.setVmPolicy(builder.build());
 //        builder.detectFileUriExposure();
-
+        Realm.init(this);
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .name("dognew.realm")
+                .schemaVersion(2)
+                .build();
+        Realm.setDefaultConfiguration(config);
     }
 }
