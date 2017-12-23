@@ -5,15 +5,18 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.dangxy.handlerdemo.R;
-import com.dangxy.handlerdemo.utils.MLog;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class RoomActivity extends AppCompatActivity {
 
@@ -25,6 +28,8 @@ public class RoomActivity extends AppCompatActivity {
     Button query;
     @BindView(R.id.update)
     Button update;
+    @BindView(R.id.text_view)
+    TextView textView;
     private UserDataBase userDataBase;
 
     @Override
@@ -69,15 +74,19 @@ public class RoomActivity extends AppCompatActivity {
 
                 break;
             case R.id.query:
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<User> userList = userDataBase.userDao().findAll();
-                        for (User user1 : userList) {
-                            MLog.e("DANG", user1.getPassWord());
-                        }
-                    }
-                }).start();
+
+                userDataBase.userDao().findAll()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<List<User>>() {
+                            @Override
+                            public void accept(List<User> users) throws Exception {
+
+                                textView.setText(users.get(users.size()-1).getPassWord());
+
+                            }
+                        });
+
 
                 break;
             case R.id.update:

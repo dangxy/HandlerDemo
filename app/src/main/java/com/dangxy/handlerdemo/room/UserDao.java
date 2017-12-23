@@ -8,6 +8,8 @@ import android.arch.persistence.room.Update;
 
 import java.util.List;
 
+import io.reactivex.Flowable;
+
 /**
  * @author dangxueyi
  * @description
@@ -16,7 +18,7 @@ import java.util.List;
 @Dao
 public interface UserDao {
     @Query("SELECT  * FROM user")
-    List<User> findAll();
+    Flowable <List<User>> findAll();
 
     @Insert
     void addUser(User user);
