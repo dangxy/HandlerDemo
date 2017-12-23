@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'realm-android'
-
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -48,5 +47,9 @@ dependencies {
     compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.4.0'
     compile 'com.jakewharton.rxbinding:rxbinding-design:0.4.0'
     compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
-
+    annotationProcessor "android.arch.lifecycle:compiler:1.0.0"
+    // Room
+    implementation "android.arch.persistence.room:runtime:1.0.0"
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+    implementation "android.arch.paging:runtime:1.0.0-alpha4-1"
 }

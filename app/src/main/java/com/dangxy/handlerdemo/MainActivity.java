@@ -25,6 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -48,6 +49,7 @@ import com.dangxy.handlerdemo.entity.RepoEntity;
 import com.dangxy.handlerdemo.entity.TopicRsp;
 import com.dangxy.handlerdemo.receiver.NetworkBroadcastReceiver;
 import com.dangxy.handlerdemo.receiver.PhoneStatusReceiver;
+import com.dangxy.handlerdemo.room.RoomActivity;
 import com.dangxy.handlerdemo.utils.MLog;
 import com.dangxy.handlerdemo.utils.ShakeUtils;
 import com.jakewharton.rxbinding2.view.RxView;
@@ -234,20 +236,20 @@ public class MainActivity extends AppCompatActivity {
         //getReadhubNewsList(readhubService);
         //getReadhubTechList(readhubService);
         //getReadhubTopisList(readhubService);
-//        findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                // Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
-//                // ViewUtils.saveBitmap(mContext,bitmap);
-//
-////              Intent intent = new Intent(mContext,ReadhubActivity.class);
-////              startActivity(intent);
+        findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Bitmap bitmap = ViewUtils.createBitmapFromView(imageView);
+                // ViewUtils.saveBitmap(mContext,bitmap);
+
+              Intent intent = new Intent(mContext,RoomActivity.class);
+              startActivity(intent);
 //                Intent intent = new Intent("android.intent.action.MY_BROADCAST");
 //                intent.putExtra("msg", "这是一条测试广播");
 //                sendBroadcast(intent);
-//
-//            }
-//        });
+
+            }
+        });
 
 
     }

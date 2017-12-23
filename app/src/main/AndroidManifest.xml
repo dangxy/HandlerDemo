@@ -6,14 +6,13 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
-
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Optional. Required for location feature -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <!-- 用于开启 debug 版本的应用在6.0 系统上 层叠窗口权限 -->
@@ -46,7 +45,7 @@
     <!-- 访问Push APK provider需要的权限，SDK富媒体需要,无富媒体功能则不需要 -->
     <uses-permission android:name="com.huawei.pushagent.permission.RICHMEDIA_PROVIDER" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name=".HandlerDemoApplication"
@@ -69,18 +68,18 @@
             android:name=".receiver.PhoneStatusReceiver"
             android:enabled="true">
             <intent-filter>
-                <action android:name="android.intent.action.MY_BROADCAST"></action>
+                <action android:name="android.intent.action.MY_BROADCAST" />
             </intent-filter>
         </receiver>
-
-        <receiver
-            android:name=".receiver.NetworkBroadcastReceiver">
+        <receiver android:name=".receiver.NetworkBroadcastReceiver">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"></action>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
 
+        <activity android:name=".room.RoomActivity"></activity>
     </application>
 
 </manifest>
